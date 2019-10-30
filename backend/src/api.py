@@ -4,6 +4,7 @@ from sqlalchemy import exc
 import json
 import copy
 import sys
+from ast import literal_eval
 from flask_cors import CORS
 
 from .database.models import db, db_drop_and_create_all, setup_db, Drink
@@ -71,7 +72,8 @@ def get_drink(jwt):
 @requires_auth('post:drinks')
 def create_drink(jwt):
     drinkForm=request.get_json()
-    drink = Drink(title=drinkForm['title'], recipe=json.dumps(drinkForm['recipe']))
+    recipe= str([drinkForm['recipe']]).replace("'",'"')
+    drink = Drink(title=drinkForm['title'], recipe=recipe)
     drinkCopy = drink.short()
     
     try:
@@ -112,7 +114,7 @@ def patch_drink(jwt, id):
         drink.title= drinkForm['title']
     
     if 'recipe' in drinkForm:
-        drink.recipe= json.dumps(drinkForm['recipe'])
+        drink.recipe= str([drinkForm['recipe']]).replace("'",'"')
     
     drinkCopy= drink.long()
 
@@ -127,7 +129,7 @@ def patch_drink(jwt, id):
 
     return jsonify({
         "success": True,
-        "drinks": drinkCopy
+        "drinks": [drinkCopy]
     })
 
 

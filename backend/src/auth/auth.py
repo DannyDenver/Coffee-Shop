@@ -3,7 +3,7 @@ from flask import request, _request_ctx_stack, abort
 from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
-
+import sys
 
 AUTH0_DOMAIN = 'dannydenver.auth0.com'
 ALGORITHMS = ['RS256']
@@ -35,29 +35,29 @@ def get_token_auth_header():
     """
     auth = request.headers.get('Authorization', None)
     if not auth:
-        raise AuthError({
+        abort(401, {
             'code': 'authorization_header_missing',
             'description': 'Authorization header is expected.'
-        }, 401)
+        })
 
     parts = auth.split()
     if parts[0].lower() != 'bearer':
-        raise AuthError({
+        abort(401, {
             'code': 'invalid_header',
             'description': 'Authorization header must start with "Bearer".'
-        }, 401)
+        })
 
     elif len(parts) == 1:
-        raise AuthError({
+        abort(401, {
             'code': 'invalid_header',
             'description': 'Token not found.'
-        }, 401)
+        })
 
     elif len(parts) > 2:
-        raise AuthError({
+        abort(401, {
             'code': 'invalid_header',
             'description': 'Authorization header must be bearer token.'
-        }, 401)
+        })
 
     token = parts[1]
     return token
@@ -78,7 +78,7 @@ def check_permissions(permission, payload):
         abort(400)
     
     if permission not in payload['permissions']:
-        abort(403)
+        abort(401)
     
     return True
 
@@ -96,7 +96,6 @@ def check_permissions(permission, payload):
     !!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
 '''
 def verify_decode_jwt(token):
-    print('verify decode')
     try:        
         jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
     except:
@@ -132,27 +131,30 @@ def verify_decode_jwt(token):
             )
 
             return payload
+                    
 
         except jwt.ExpiredSignatureError:
-            raise AuthError({
+            print("expired!")
+            abort(401, {
                 'code': 'token_expired',
                 'description': 'Token expired.'
-            }, 401)
+            })
 
         except jwt.JWTClaimsError:
-            raise AuthError({
+            abort(401, {
                 'code': 'invalid_claims',
                 'description': 'Incorrect claims. Please, check the audience and issuer.'
             }, 401)
         except Exception:
-            raise AuthError({
+            abort(401, {
                 'code': 'invalid_header',
                 'description': 'Unable to parse authentication token.'
-            }, 400)
-    raise AuthError({
-                'code': 'invalid_header',
-                'description': 'Unable to find the appropriate key.'
-            }, 400)
+            })
+            
+    abort(401, {
+        'code': 'invalid_header',
+        'description': 'Unable to find the appropriate key.'
+    })
 
 '''
 @TODO implement @requires_auth(permission) decorator method
