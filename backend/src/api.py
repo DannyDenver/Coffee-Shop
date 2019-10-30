@@ -72,6 +72,7 @@ def get_drink(jwt):
 @requires_auth('post:drinks')
 def create_drink(jwt):
     drinkForm=request.get_json()
+    print(drinkForm)
     recipe= str([drinkForm['recipe']]).replace("'",'"')
     drink = Drink(title=drinkForm['title'], recipe=recipe)
     drinkCopy = drink.short()
