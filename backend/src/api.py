@@ -78,7 +78,8 @@ def get_drink(jwt):
 def create_drink(jwt):
     drinkForm = request.get_json()
     print(drinkForm)
-    recipe = str([drinkForm['recipe']]).replace("'", '"')
+    #recipe = str([drinkForm['recipe']]).replace("'", '"')
+    recipe = json.dumps(drinkForm['recipe'])
     drink = Drink(title=drinkForm['title'], recipe=recipe)
     drinkCopy = drink.short()
 
@@ -122,7 +123,8 @@ def patch_drink(jwt, id):
         drink.title = drinkForm['title']
 
     if 'recipe' in drinkForm:
-        drink.recipe = str([drinkForm['recipe']]).replace("'", '"')
+        #drink.recipe = str([drinkForm['recipe']]).replace("'", '"')
+        drink.recipe = json.dumps(drinkForm['recipe'])
 
     drinkCopy = drink.long()
 
@@ -181,10 +183,10 @@ Example error handling for unprocessable entity
 @app.errorhandler(422)
 def unprocessable(error):
     return jsonify({
-                    "success": False,
-                    "error": 422,
-                    "message": "unprocessable"
-                    }), 422
+            "success": False,
+            "error": 422,
+            "message": "unprocessable"
+            }), 422
 
 
 '''
@@ -197,6 +199,13 @@ def unprocessable(error):
                     }), 404
 
 '''
+@app.errorhandler(404)
+def notfound(error):
+    return jsonify({
+            "success": False,
+            "error": 404,
+            "message": "resource not found"
+            }), 404
 
 '''
 @TODO implement error handler for 404
@@ -205,20 +214,18 @@ def unprocessable(error):
 @app.errorhandler(404)
 def notfound(error):
     return jsonify({
-                    "success": False,
-                    "error": 404,
-                    "message": "resource not found"
-                    }), 404
+            "success": False,
+            "error": 404,
+            "message": "resource not found"
+            }), 404
 
 
 '''
 @TODO implement error handler for AuthError
     error handler should conform to general task above
 '''
-@app.errorhandler(401)
-def unauthorized(error):
-    return jsonify({
-                    "success": False,
-                    "error": 401,
-                    "message": "unauthorized"
-                    }), 401
+@app.errorhandler(AuthError)
+def handle_auth_error(ex):
+    response = jsonify(ex.error)
+    response.status_code = ex.status_code
+    return response

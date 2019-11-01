@@ -72,6 +72,7 @@ export class AuthService {
     this.token = '';
     this.payload = null;
     this.set_jwt();
+    document.location.href= 'https://'+ this.url + '.auth0.com/v2/logout';
   }
 
   can(permission: string) {
