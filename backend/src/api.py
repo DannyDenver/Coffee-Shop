@@ -78,8 +78,8 @@ def get_drink(jwt):
 def create_drink(jwt):
     drinkForm = request.get_json()
     print(drinkForm)
-    #recipe = str([drinkForm['recipe']]).replace("'", '"')
-    recipe = json.dumps(drinkForm['recipe'])
+    recipe = str([drinkForm['recipe']]).replace("'", '"')
+    #recipe = json.dumps(drinkForm['recipe'])
     drink = Drink(title=drinkForm['title'], recipe=recipe)
     drinkCopy = drink.short()
 
@@ -123,8 +123,8 @@ def patch_drink(jwt, id):
         drink.title = drinkForm['title']
 
     if 'recipe' in drinkForm:
-        #drink.recipe = str([drinkForm['recipe']]).replace("'", '"')
-        drink.recipe = json.dumps(drinkForm['recipe'])
+        drink.recipe = str([drinkForm['recipe']]).replace("'", '"')
+        #drink.recipe = json.dumps(drinkForm['recipe'])
 
     drinkCopy = drink.long()
 
