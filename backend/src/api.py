@@ -1,5 +1,6 @@
 import os
 from flask import Flask, request, jsonify, abort
+from flask import json as flaskJson
 from sqlalchemy import exc
 import json
 import copy
@@ -76,11 +77,18 @@ def get_drink(jwt):
 @app.route('/drinks', methods=['POST'])
 @requires_auth('post:drinks')
 def create_drink(jwt):
-    drinkForm = request.get_json()
-    print(drinkForm)
-    recipe = str([drinkForm['recipe']]).replace("'", '"')
-    #recipe = json.dumps(drinkForm['recipe'])
-    drink = Drink(title=drinkForm['title'], recipe=recipe)
+    body = request.get_json()
+    # title = request.get('title')
+    # recipe = request.get('recipe')
+    print(request.json['title'])
+    print(request.json['recipe'])
+
+    data = json.loads(request.data.decode('utf-8'))
+    recipe = json.dumps(data['recipe'])
+    title = data['title']
+
+
+    drink = Drink(title=title, recipe=recipe)
     drinkCopy = drink.short()
 
     try:
